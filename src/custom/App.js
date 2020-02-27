@@ -1,18 +1,10 @@
 import React, { Component } from 'react';
 import './App.css';
 import Quoter from './Quoter.js';
-import makeRequest from './get-req';
 
 class App extends Component {
   constructor(props) {
     super(props);
-    let listOfQuotes = [];
-    makeRequest(listOfQuotes);
-    
-    //HOW DO I ACCESS LIST?
-    console.log(listOfQuotes);
-    
-
     this.state = {
       quotes: [
         {
@@ -35,10 +27,28 @@ class App extends Component {
           text: 'He who paints the foundations of society eats the greatest feast.',
           author: 'Justin A. Becker'
         },
-        ...listOfQuotes
       ],
       qi: 0
     };
+  }
+
+  populateQuotes = () => {
+    fetch('https://type.fit/api/quotes')
+    .then(response => response.json())
+    .then(data => {
+      for (const row of data) {
+        this.setState(prevState => {
+          let authorName = null;
+          if (row['author'] == null) {
+            authorName = 'Anonymous';
+          } else {
+            authorName = row['author'];
+          }
+          prevState.quotes = [...prevState.quotes, { text: row['text'], author: authorName }];
+          return prevState;
+        })
+      }
+    });
   }
 
   getNewQuote = () => {
@@ -66,6 +76,10 @@ class App extends Component {
         </div>
       </div>
     );
+  }
+
+  componentDidMount() {
+    this.populateQuotes()
   }
 
   componentDidUpdate() {
